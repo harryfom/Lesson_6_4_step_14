@@ -3,9 +3,6 @@ package ru.fomenko_iv;
 import java.util.*;
 import java.util.function.Consumer;
 
-/**
- * Created by FomeIV on 28.03.2016.
- */
 public class Main {
     public static void main(String[] args) {
         // Random variables
@@ -90,7 +87,7 @@ public class Main {
         private String to;
         private T content;
 
-        public Mail(String from, String to, T content ) {
+        public Mail(String from, String to, T content) {
             this.from = from;
             this.to = to;
             this.content = content;
@@ -125,28 +122,29 @@ public class Main {
 
         @Override
         public List<T> get(Object key) {
-            if (!containsKey(key)){
-                put((String) key,new ArrayList<>());
+            if (!containsKey(key)) {
+                return Collections.emptyList();
             }
             return super.get(key);
         }
     }
 
-    public static class MailService<T> implements Consumer<Mail> {
-        Map<String,List<T>> mailBox = new MailBox<>();
+    public static class MailService<T> implements Consumer<Mail<T>> {
+        Map<String, List<T>> mailBox = new MailBox<>();
 
         public Map<String, List<T>> getMailBox() {
             return mailBox;
         }
 
         @Override
-        public void accept(Mail mail) {
+        public void accept(Mail<T> mail) {
             // Этот метод должен разложить почту по почтовым ящикам получателей
             List<T> list = mailBox.get(mail.to);
-            list.add((T) mail.getContent());
-
+            if (list.size() == 0) {
+                list = new ArrayList<T>();
+            }
+            list.add(mail.getContent());
+            mailBox.put(mail.to, list);
         }
-
-
     }
 }
