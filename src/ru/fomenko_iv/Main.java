@@ -85,13 +85,15 @@ public class Main {
         assert salaries.get(randomTo).equals(Arrays.asList(randomSalary)) : "wrong salaries mailbox content (3)";
     }
 
-    public static abstract class Mail {
+    public static abstract class Mail<T> {
         private String from;
         private String to;
+        private T content;
 
-        public Mail(String from, String to) {
+        public Mail(String from, String to, T content ) {
             this.from = from;
             this.to = to;
+            this.content = content;
         }
 
         public String getFrom() {
@@ -102,38 +104,49 @@ public class Main {
             return to;
         }
 
-    }
-
-    public static class MailMessage extends Mail {
-        private String content;
-
-        public MailMessage(String from, String to, String content) {
-            super(from, to);
-            this.content = content;
-        }
-
-        public String getContent() {
+        public T getContent() {
             return content;
         }
-
     }
 
-    public static class Salary extends Mail {
-        private int salary;
+    public static class MailMessage extends Mail<String> {
+        public MailMessage(String from, String to, String content) {
+            super(from, to, content);
+        }
+    }
 
-        public Salary(String from, String to, int salary) {
-            super(from, to);
-            this.salary = salary;
+    public static class Salary extends Mail<Integer> {
+        public Salary(String from, String to, Integer content) {
+            super(from, to, content);
+        }
+    }
+
+    public static class MailBox<T> extends HashMap<String, List<T>> {
+
+        @Override
+        public List<T> get(Object key) {
+            if (!containsKey(key)){
+                put((String) key,new ArrayList<>());
+            }
+            return super.get(key);
         }
     }
 
     public static class MailService<T> implements Consumer<Mail> {
-        HashMap<T,String> mailBox = new HashMap<>();
+        Map<String,List<T>> mailBox = new MailBox<>();
 
+        public Map<String, List<T>> getMailBox() {
+            return mailBox;
+        }
 
         @Override
         public void accept(Mail mail) {
+            // Этот метод должен разложить почту по почтовым ящикам получателей
+            List<T> list = mailBox.get(mail.to);
+            list.add((T) mail.getContent());
 
         }
+
+
     }
 }
